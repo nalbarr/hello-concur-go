@@ -2,14 +2,22 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
-func sum(s []int, c chan int) {
+func sum(id int, xs []int, c chan int) {
 	sum := 0
-	for _, v := range s {
+
+	fmt.Printf("Goroutine %d start.\n", id)
+
+	for _, v := range xs {
 		sum += v
+		time.Sleep(time.Second)
 	}
-	c <- sum 
+
+	fmt.Printf("Goroutine %d stop.\n", id)
+
+	c <- sum
 }
 
 func main() {
@@ -21,11 +29,13 @@ func main() {
 	c := make(chan int)
 
 	// 2. push 2 sums of splitting xs into 2 halves
-	go sum(xs[:len(xs)/2], c)
-	go sum(xs[len(xs)/2:], c)
+	leftxs := xs[:len(xs)/2]
+	rightxs := xs[len(xs)/2:]
+	go sum(1, leftxs, c)
+	go sum(2, rightxs, c)
 
 	// 3. pull 2 sums from channel
-	x, y := <-c, <-c 
+	x, y := <-c, <-c
 
 	// 4. output state
 	fmt.Println(x, y, x+y)
